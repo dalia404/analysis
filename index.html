@@ -80,8 +80,11 @@
                 });
 
                 if (!response.ok) throw new Error('Network response was not ok');
-
-                const data = await response.json();
+                const responseText = await response.text(); // نجرب قراءة النص أولاً
+                 console.log("الرد الخام من السيرفر:", responseText); // لنرى ماذا يرسل السيرفر حقاً في الكونسول
+                const data = JSON.parse(responseText);
+                 document.getElementById(aiId).innerText = data.output || "لا يوجد رد";
+            
                   // نتحقق إذا كان الرد داخل مصفوفة (كما يحدث غالباً مع n8n) أو كائن مباشر
                 const outputText = Array.isArray(data) ? data[0].output : data.output;
                   document.getElementById(aiId).innerText = outputText || "عذراً، لم أستطع استلام الرد بشكل صحيح.";
