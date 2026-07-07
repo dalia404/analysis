@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            background-color: #0b0f19; 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .message-bubble { 
+            max-width: 80%; 
+            padding: 12px 18px; 
+            border-radius: 18px; 
+            margin: 8px; 
+            line-height: 1.6;
+        }
+        .user-msg { 
+            background: #1e3a8a; 
+            color: #ffffff; 
+            align-self: flex-end; 
+        }
+        .ai-msg { 
+            background: #1e293b; 
+            color: #f8fafc; 
+            align-self: flex-start; 
+            border: 1px solid #334155; 
+        }
+        #chat-box::-webkit-scrollbar { width: 6px; }
+        #chat-box::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-3xl flex flex-col h-screen p-4">
+        <h1 class="text-3xl font-bold text-slate-100 text-center mb-4 tracking-wide">Gold Analytics AI</h1>
+        
+        <div id="chat-box" class="flex-1 overflow-y-auto p-4 flex flex-col space-y-2">
+            <!-- الرسائل ستظهر هنا -->
+        </div>
+
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700/60 flex gap-2 shadow-xl">
+            <input id="user-input" class="flex-1 bg-transparent text-slate-100 outline-none placeholder-slate-400" placeholder="اسألني عن تحليل الذهب...">
+            <button onclick="sendMessage()" class="bg-blue-700 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-xl transition-colors duration-200">إرسال</button>
+        </div>
+        <p class="text-[10px] text-slate-500 text-center mt-2">تنبيه: تحليلات فنية آلية - ليست نصيحة استثمارية.</p>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            if (!input.value.trim()) return;
+
+            // 1. إضافة رسالة المستخدم
+            chatBox.innerHTML += `<div class="message-bubble user-msg">${input.value}</div>`;
+            const userText = input.value;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // 2. إضافة فقاعة "جاري التحليل"
+            const aiId = 'ai-' + Date.now();
+            chatBox.innerHTML += `<div id="${aiId}" class="message-bubble ai-msg">جاري التحليل...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            // 3. رابط n8n المباشر (تأكدي من استخدام Production URL)
+            const WEBHOOK_URL ="/api/f8e57eb3-779f-4dc3-b930-c9111ecb38fb";
+            try {
+                // الاتصال المباشر بالسيرفر
+                const response = await fetch(WEBHOOK_URL, { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: userText })
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json();
+                document.getElementById(aiId).innerText = data.output || "لا يوجد رد.";
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById(aiId).innerText = "عذراً، حدث خطأ أثناء الاتصال بالخادم. تأكدي من تفعيل الورك فلو.";
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
