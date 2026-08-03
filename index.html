@@ -85,12 +85,16 @@
                 const data = JSON.parse(responseText);
                  document.getElementById(aiId).innerText = data.output || "لا يوجد رد";
             
-                  // نتحقق إذا كان الرد داخل مصفوفة (كما يحدث غالباً مع n8n) أو كائن مباشر
-                const outputText = Array.isArray(data) ? data[0].output : data.output;
-                  document.getElementById(aiId).innerText = outputText || "عذراً، لم أستطع استلام الرد بشكل صحيح.";
-            } catch (error) {
-                console.error("Error:", error);
-                document.getElementById(aiId).innerText = "عذراً، حدث خطأ أثناء الاتصال بالخادم. تأكدي من تفعيل الورك فلو.";
+                  // بدلاً من عمل JSON.parse مباشرة
+                const text = await response.text();
+                 console.log("الرد الخام من السيرفر:", text);
+
+                if (!response.ok || !text.trim()) {
+                  console.error("السيرفر رجع رد فاضي أو فيه مشكلة!");
+                  return;
+            } 
+
+const data = JSON.parse(text);
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
