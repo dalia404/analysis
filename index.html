@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Analytics AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -20,6 +21,7 @@
             border-radius: 18px; 
             margin: 8px; 
             line-height: 1.6;
+            word-break: break-word;
         }
         .user-msg { 
             background: #1e3a8a; 
@@ -46,21 +48,31 @@
         </div>
 
         <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700/60 flex gap-2 shadow-xl">
-            <input id="user-input" class="flex-1 bg-transparent text-slate-100 outline-none placeholder-slate-400" placeholder="اسألني عن تحليل الذهب...">
+            <input id="user-input" 
+                   onkeypress="handleKeyPress(event)" 
+                   class="flex-1 bg-transparent text-slate-100 outline-none placeholder-slate-400 px-2" 
+                   placeholder="اسألني عن تحليل الذهب...">
             <button onclick="sendMessage()" class="bg-blue-700 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-xl transition-colors duration-200">إرسال</button>
         </div>
         <p class="text-[10px] text-slate-500 text-center mt-2">تنبيه: تحليلات فنية آلية - ليست نصيحة استثمارية.</p>
     </div>
 
     <script>
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const chatBox = document.getElementById('chat-box');
-            if (!input.value.trim()) return;
+            const userText = input.value.trim();
+
+            if (!userText) return;
 
             // 1. إضافة رسالة المستخدم
-            chatBox.innerHTML += `<div class="message-bubble user-msg">${input.value}</div>`;
-            const userText = input.value;
+            chatBox.innerHTML += `<div class="message-bubble user-msg">${userText}</div>`;
             input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -69,38 +81,47 @@
             chatBox.innerHTML += `<div id="${aiId}" class="message-bubble ai-msg">جاري التحليل...</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
             
-            // 3. رابط n8n المباشر (تأكدي من استخدام Production URL)
-            const WEBHOOK_URL ="https://dalia4047.app.n8n.cloud/webhook/f8e57eb3-779f-4dc3-b930-c9111ecb38fb";
+            // 3. رابط n8n المباشر
+            const WEBHOOK_URL = "https://dalia4047.app.n8n.cloud/webhook/f8e57eb3-779f-4dc3-b930-c9111ecb38fb";
+
             try {
-                // الاتصال المباشر بالسيرفر
                 const response = await fetch(WEBHOOK_URL, { 
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ message: userText })
                 });
 
-                if (!response.ok) throw new Error('Network response was not ok');
-                const responseText = await response.text(); // نجرب قراءة النص أولاً
-                 console.log("الرد الخام من السيرفر:", responseText); // لنرى ماذا يرسل السيرفر حقاً في الكونسول
-                const data = JSON.parse(responseText);
-                 document.getElementById(aiId).innerText = data.output || "لا يوجد رد";
-                  // بدلاً من عمل JSON.parse مباشرة
-                const text = await response.text();
-                 console.log("الرد الخام من السيرفر:", text);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-                if (!response.ok || !text.trim()) {
-                  console.error("السيرفر رجع رد فاضي أو فيه مشكلة!");
-                  return;
+                // قراءة الرد النصي مرة واحدة فقط
+                const responseText = await response.text();
+                console.log("الرد الخام من السيرفر:", responseText);
+
+                if (!responseText.trim()) {
+                    document.getElementById(aiId).innerText = "تم استلام الطلب ولكن لم يرجع الخادم أي نص.";
+                    return;
                 }
 
-            
-                  // نتحقق إذا كان الرد داخل مصفوفة (كما يحدث غالباً مع n8n) أو كائن مباشر
-                const outputText = Array.isArray(data) ? data[0].output : data.output;
-                  document.getElementById(aiId).innerText = outputText || "عذراً، لم أستطع استلام الرد بشكل صحيح.";
+                // تحليل JSON
+                const data = JSON.parse(responseText);
+
+                // استخراج النص سواء كان الرد Array أو Object
+                let outputText = "";
+                if (Array.isArray(data)) {
+                    outputText = data[0]?.output || data[0]?.text || JSON.stringify(data[0]);
+                } else if (typeof data === 'object') {
+                    outputText = data.output || data.text || JSON.stringify(data);
+                } else {
+                    outputText = data;
+                }
+
+                document.getElementById(aiId).innerText = outputText || "عذراً، لم أستطع استلام الرد بشكل صحيح.";
+
             } catch (error) {
                 console.error("Error:", error);
-                document.getElementById(aiId).innerText = "عذراً، حدث خطأ أثناء الاتصال بالخادم. تأكدي من تفعيل الورك فلو.";
+                document.getElementById(aiId).innerText = "عذراً، حدث خطأ أثناء الاتصال بالخادم. تأكدي من تفعيل Workflow و CORS في n8n.";
             }
+
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     </script>
