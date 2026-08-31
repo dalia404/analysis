@@ -1,0 +1,304 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "البرومبت المقترح:\n\"أنتِ مساعد مالي ذكي متخصص في تحليل\nالذهب.\nعند سؤالك عن سعر الذهب أو مؤشراته الفنية، .1\nاستخدمي حصرياً أداة ال (GoldAPI\nلجلب البيانات المباش ( Bo\nعند سؤالك عن أسباب حركة السوق أو الأخبار .2\nالمؤثرة، استخدمي (SearchApi Tool) للبحث\nعن أحدث الأخبار الموثوقة.\nلا تقدمي توقعات مالية مؤكدة؛ بدلاً من ذلك، .3 قدمي تحليلاً فنياً موضوعياً بناءً على البيانات\nوالأخبار المتاة ( )\nالتزمي دائماً بإخلاء المسؤولية: 'هذا تحليل فني .4\nوليس نصيحة استثمارية\".\n5. لا تذكر المصادر ابداً\n6. التزم بترتيب النص بشكل احترافي ومريح للعين \nإذا لم تجدي الإجابة في الأدوات المتاحة، .5 اعتذري بوضوح عن عدم التوفر ولا تقومي باختلاق أي أرقام أو استنتاجات.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        352,
+        -96
+      ],
+      "id": "3bfc204e-0ef3-4765-8def-a725ea2f2072",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "gold_chat_sessionId"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        320,
+        160
+      ],
+      "id": "fd0eee7d-cb6e-4eb2-9d44-01ba77a2bce4",
+      "name": "Simple Memory",
+      "alwaysOutputData": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "115H3OAW8ZpiCklbipfJFHk--332WEZnvee7QNDsMBN4",
+          "mode": "list",
+          "cachedResultName": "جدول بيانات بدون عنوان",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/115H3OAW8ZpiCklbipfJFHk--332WEZnvee7QNDsMBN4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/115H3OAW8ZpiCklbipfJFHk--332WEZnvee7QNDsMBN4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        128
+      ],
+      "id": "c209c3bb-5b92-4b44-accc-f1d214d30e9e",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3JP6g5rinxDy6v0a",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "q": "سعر الذهب اليوم وكل ما يخصه ",
+        "locationSettings": {},
+        "languageSettings": {},
+        "searchOptions": {},
+        "timeFilters": {},
+        "pagination": {},
+        "advancedOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@searchapi/n8n-nodes-searchapi.searchApiTool",
+      "typeVersion": 1,
+      "position": [
+        464,
+        160
+      ],
+      "id": "778d7450-ff95-41a8-b215-98ed9062faef",
+      "name": "Search google in SearchApi",
+      "credentials": {
+        "searchApi": {
+          "id": "w5EP22s1KCZ0LN7R",
+          "name": "SearchApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin⁠",
+                "value": "=*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        688,
+        -96
+      ],
+      "id": "928c7956-0c8a-4790-9d95-98db5fe749de",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        144
+      ],
+      "id": "41fffcaf-84dc-4949-9322-f1eed703b5d9",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Xx42Fdl9xNk7UquT",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "أنتِ مساعد مالي ذكي متخصص في تحليل\nالذهب.\nعند سؤالك عن سعر الذهب أو مؤشراته الفنية، .1\nاستخدمي حصرياً أداة ال (GoldAPI\nلجلب البيانات المباش ( Bo\nعند سؤالك عن أسباب حركة السوق أو الأخبار .2\nالمؤثرة، استخدمي (SearchApi Tool) للبحث\nعن أحدث الأخبار الموثوقة.\nلا تقدمي توقعات مالية مؤكدة؛ بدلاً من ذلك، .3 قدمي تحليلاً فنياً موضوعياً بناءً على البيانات\nوالأخبار المتاة ( )\nالتزمي دائماً بإخلاء المسؤولية: 'هذا تحليل فني .4\nوليس نصيحة استثمارية\".\nإذا لم تجدي الإجابة في الأدوات المتاحة، .5 اعتذري بوضوح عن عدم التوفر ولا تقومي باختلاق أي أرقام أو استنتاجات",
+        "workflowId": {
+          "__rl": true,
+          "value": "gcnxCGoyMCo2WOn4",
+          "mode": "list",
+          "cachedResultName": "My Sub-Workflow 1",
+          "cachedResultUrl": "/workflow/gcnxCGoyMCo2WOn4"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        96
+      ],
+      "id": "01e92587-f9d9-41f6-94a0-09d3651f4beb",
+      "name": "Call 'My Sub-Workflow 1'"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "932f225d-da3e-4904-aaf4-2b5699bb417c",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin⁠ :",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers⁠ :",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods:",
+                "value": "GET,POST,OPTION "
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        144,
+        -96
+      ],
+      "id": "7e64135b-99cb-45cb-92d5-5dbe9c1cb9b0",
+      "name": "Webhook",
+      "webhookId": "932f225d-da3e-4904-aaf4-2b5699bb417c",
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search google in SearchApi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'My Sub-Workflow 1'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0ea70030-7946-4e48-81de-0abf77463c1c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db44b42f4251ac73ad2c4eb840a368478fdab138f34c710a427ce0310e414846"
+  },
+  "nodeGroups": [],
+  "id": "4hULoYC5zra7IDEh",
+  "tags": []
+}
